@@ -20,7 +20,7 @@ app.use("/api/admin", adminRouter)
 app.use("/api/user",userRouter)
 
 app.get("/", (req, res) => {
-    res.json({ message: "api is running" })
+    res.send({ message: "api is running" })
 })
 
 app.use((err, req, res, next) => {

@@ -59,7 +59,6 @@ const mandatorySchema = new mongoose.Schema(
                 {
                     key: { type: String },
                     value: { type: String },
-                    image: { type: String }
                 }
             ]
 

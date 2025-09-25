@@ -128,13 +128,9 @@ adminRouter.get("/blogs", authentication, authorization(["admin"]), getBlogs);
 adminRouter.get("/blogs/:id", authentication, authorization(["admin"]), getBlogById);
 
 
-adminRouter.post("/mandatory", authentication, authorization(["admin"]), upload.fields([
-    { name: "banner", maxCount: 1 },
-    { name: "documents2Images", maxCount: 10 },
-    { name: "documents3Images", maxCount: 10 },
-    { name: "documents5Images", maxCount: 10 },
-    { name: "documents6Images", maxCount: 10 },
-]), upsertMandatory);
+adminRouter.post("/mandatory", authentication, authorization(["admin"]),
+upload.any(),
+ upsertMandatory);
 adminRouter.get("/mandatory", authentication, authorization(["admin"]), getMandatory);
 
 

@@ -1,4 +1,4 @@
-import AdminModel from "../Models/AdminModel.js";
+import AdminModel from "../Models/adminModel.js";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import ContactReqModel from "../Models/contactReqModel.js";
@@ -2337,55 +2337,122 @@ export const upsertSport = async (req, res, next) => {
 
 export const upsertMandatory = async (req, res, next) => {
   try {
-    const { documents1, documents2, documents3, documents4, documents5, documents6 } = req.body;
-
-    let bannerPath = null;
-    if (req.file) {
-      bannerPath = `public/uploads/${req.file.filename}`;
-    }
+    const { body, files } = req;
 
     let mandatoryDoc = await MandatoryModel.findOne();
 
+    // Banner handling
+    const bannerFile = files.find((file) => file.fieldname === "banner");
+    const bannerPath = bannerFile
+      ? `public/uploads/${bannerFile.filename}`
+      : mandatoryDoc?.banner;
+
+    // Helper function to parse each document
+    const parseDocument = (docKey) => {
+      const docData = { heading: "", subHeading: [] };
+      const doc = body[docKey];
+
+      if (doc && typeof doc === "object") {
+        docData.heading = doc.heading || "";
+
+        docData.subHeading = doc.subHeading?.map((sub, idx) => {
+          const subHeading = { key: sub.key || "" };
+
+          // Determine if this doc type needs value, image, or both
+          if (["documents1", "documents4", "documents5"].includes(docKey)) {
+            subHeading.value = sub.value || "";
+          } else if (["documents2", "documents6"].includes(docKey)) {
+            // Check if a new image was uploaded
+            const file = files.find(
+              (f) => f.fieldname === `${docKey}[subHeading][${idx}][image]`
+            );
+            subHeading.image = file
+              ? `public/uploads/${file.filename}`
+              : sub.image || ""; // preserve old image if not replaced
+          } else if (docKey === "documents3") {
+            const file = files.find(
+              (f) => f.fieldname === `${docKey}[subHeading][${idx}][image]`
+            );
+            if (file) subHeading.image = `public/uploads/${file.filename}`;
+            if (sub.value) subHeading.value = sub.value;
+          }
+
+          return subHeading;
+        }) || [];
+      }
+      return docData;
+    };
+
+    // Parse all documents
+    const updatedData = {
+      banner: bannerPath,
+      documents1: parseDocument("documents1"),
+      documents2: parseDocument("documents2"),
+      documents3: parseDocument("documents3"),
+      documents4: parseDocument("documents4"),
+      documents5: parseDocument("documents5"),
+      documents6: parseDocument("documents6"),
+    };
+
     if (!mandatoryDoc) {
+      // Create new document
       if (!bannerPath) {
         return res.status(400).json({ message: "Banner image is required" });
       }
-
-      mandatoryDoc = new MandatoryModel({
-        banner: bannerPath,
-        documents1: documents1 || {},
-        documents2: documents2 || {},
-        documents3: documents3 || {},
-        documents4: documents4 || {},
-        documents5: documents5 || {},
-        documents6: documents6 || {},
-      });
+      mandatoryDoc = new MandatoryModel(updatedData);
     } else {
-      if (bannerPath) {
-        if (mandatoryDoc.banner && fs.existsSync(mandatoryDoc.banner)) {
-          fs.unlinkSync(mandatoryDoc.banner);
-        }
-        mandatoryDoc.banner = bannerPath;
+      // Banner: remove old if replaced
+      if (bannerFile && mandatoryDoc.banner && fs.existsSync(mandatoryDoc.banner)) {
+        fs.unlinkSync(mandatoryDoc.banner);
       }
 
-      if (documents1) mandatoryDoc.documents1 = documents1;
-      if (documents2) mandatoryDoc.documents2 = documents2;
-      if (documents3) mandatoryDoc.documents3 = documents3;
-      if (documents4) mandatoryDoc.documents4 = documents4;
-      if (documents5) mandatoryDoc.documents5 = documents5;
-      if (documents6) mandatoryDoc.documents6 = documents6;
+      // Handle subheadings: remove deleted images
+      ["documents2", "documents3", "documents6"].forEach((docKey) => {
+        const oldSubs = mandatoryDoc[docKey]?.subHeading || [];
+        const newSubs = updatedData[docKey]?.subHeading || [];
+
+        oldSubs.forEach((sub, idx) => {
+          // If old subheading no longer exists in new data, remove image
+          if (!newSubs[idx] && sub.image && fs.existsSync(sub.image)) {
+            fs.unlinkSync(sub.image);
+          }
+        });
+
+        // Preserve old images for subheadings that remain unchanged
+        newSubs.forEach((sub, idx) => {
+          if (!sub.image && oldSubs[idx]?.image) {
+            sub.image = oldSubs[idx].image;
+          }
+        });
+      });
+
+      // Merge new data
+      Object.assign(mandatoryDoc, updatedData);
     }
 
     await mandatoryDoc.save();
 
+    // // Add imageUrl for frontend
+    // const responseData = mandatoryDoc.toObject();
+    // ["documents2", "documents3", "documents6"].forEach((docKey) => {
+    //   if (responseData[docKey]?.subHeading) {
+    //     responseData[docKey].subHeading = responseData[docKey].subHeading.map((sub) => ({
+    //       ...sub,
+    //       imageUrl: sub.image ? `${process.env.BASE_URL || import.meta.env.VITE_APP_URL}${sub.image}` : "",
+    //     }));
+    //   }
+    // });
+
     res.status(200).json({
       message: "Mandatory data saved successfully",
-      data: mandatoryDoc,
+      // data: responseData,
     });
   } catch (error) {
+    console.error("Error in upsertMandatory:", error);
     next(error);
   }
 };
+
 
 export const getMandatory = async (req, res, next) => {
   try {
