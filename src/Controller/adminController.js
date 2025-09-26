@@ -262,9 +262,9 @@ export const upsertEveryChildLearn = async (req, res, next) => {
     if (removeImages && Array.isArray(removeImages) && removeImages.length > 0) {
       removeImages.forEach((imgPath) => {
         const fullPath = path.join(process.cwd(), imgPath);
-        if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath); // delete file
+        if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath); 
       });
-      images = images.filter((img) => !removeImages.includes(img)); // remove from array
+      images = images.filter((img) => !removeImages.includes(img));
     }
 
     if (req.files && req.files.length > 0) {
@@ -2341,7 +2341,6 @@ export const upsertMandatory = async (req, res, next) => {
 
     let mandatoryDoc = await MandatoryModel.findOne();
 
-    // Banner handling
     const bannerFile = files.find((file) => file.fieldname === "banner");
     const bannerPath = bannerFile
       ? `public/uploads/${bannerFile.filename}`
@@ -2426,26 +2425,12 @@ export const upsertMandatory = async (req, res, next) => {
         });
       });
 
-      // Merge new data
       Object.assign(mandatoryDoc, updatedData);
     }
 
     await mandatoryDoc.save();
-
-    // // Add imageUrl for frontend
-    // const responseData = mandatoryDoc.toObject();
-    // ["documents2", "documents3", "documents6"].forEach((docKey) => {
-    //   if (responseData[docKey]?.subHeading) {
-    //     responseData[docKey].subHeading = responseData[docKey].subHeading.map((sub) => ({
-    //       ...sub,
-    //       imageUrl: sub.image ? `${process.env.BASE_URL || import.meta.env.VITE_APP_URL}${sub.image}` : "",
-    //     }));
-    //   }
-    // });
-
     res.status(200).json({
       message: "Mandatory data saved successfully",
-      // data: responseData,
     });
   } catch (error) {
     console.error("Error in upsertMandatory:", error);

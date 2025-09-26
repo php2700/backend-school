@@ -1,7 +1,7 @@
 import express from 'express'
 import { admisssionEnquiry, contactUs, enquiry, listGallery, takeTour } from '../Controller/userController.js';
 import upload from '../Middleware/upload.js';
-import { getAbout, getActivity, getAdmissionProcess, getApplicationFormBanner, getArt, getBanner, getBlogBanner, getBlogs, getCbseSection, getClassRoomBanner, getClassRooms, getContactBanner, getCore, getCurriculum, getDifferentQuality, getEnvironment, getEveryChildren, getFacility, getFaqBanner, getGalleryBanner, getLeaders, getLeadershipBanner, getMandatory, getPhilosophy, getPrincipals, getPursuit, getScheduleBanner, getShriDifferentiator, getShriEducator, getSociety, getSportData, getStudentExperience, getVision, getWelcome, programList, steamList } from '../Controller/adminController.js';
+import { getAbout, getActivity, getAdmissionProcess, getApplicationFormBanner, getArt, getBanner, getBlogBanner, getBlogs, getCbseSection, getClassRoomBanner, getClassRooms, getContactBanner, getCore, getCurriculum, getDifferentQuality, getEnvironment, getEveryChildren, getFacility, getFaq, getFaqBanner, getGalleryBanner, getLeaders, getLeadershipBanner, getMandatory, getPhilosophy, getPrincipals, getPursuit, getScheduleBanner, getShriDifferentiator, getShriEducator, getSociety, getSportData, getStudentExperience, getVision, getWelcome, programList, steamList } from '../Controller/adminController.js';
 
 const userRouter = express.Router();
 
@@ -15,7 +15,7 @@ userRouter.post("/take-tour", takeTour)
 userRouter.post("/contact-us", contactUs)
 
 /*----------------banner-------------------*/
-userRouter.get("/banner", getBanner)
+userRouter.get("/get-banner", getBanner)
 
 /*-------------------------welcome ----------*/
 userRouter.get('/welcome', getWelcome)
@@ -37,6 +37,8 @@ userRouter.get("/student-experience-list", getStudentExperience)
 
 /*------------------------enquiry---------------*/
 userRouter.post("/enquiry", enquiry)
+userRouter.get("/faq-list", getFaq)
+
 
 /*---------------activity --------------------------*/
 userRouter.get("/activity-list", getActivity)
