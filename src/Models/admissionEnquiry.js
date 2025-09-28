@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 
 const siblingSchema = new mongoose.Schema({
-    name: String,
-    class: String,
-    schoolName: String
+   serialNo: { type: String },
+  name: { type: String },
+  class: { type: String },
+  school: { type: String }
 });
 
 const admissionEnquirySchema = new mongoose.Schema(

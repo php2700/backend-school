@@ -4,12 +4,12 @@ const activitySchema = new mongoose.Schema(
     {
         image: {
             type: String,
-            required: true,
+            // required: true,
             trim: true,
         },
         title: {
             type: String,
-            required: true,
+            // required: true,
             trim: true,
             
         },

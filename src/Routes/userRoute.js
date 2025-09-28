@@ -96,7 +96,7 @@ userRouter.get("/sport", getSportData);
 userRouter.get("/application-form-banner", getApplicationFormBanner);
 userRouter.get("/faq-banner", getFaqBanner);
 userRouter.get("/schedule-banner", getScheduleBanner);
-userRouter.get("/schedule-banner", getAdmissionProcess);
+userRouter.get("/admission-process", getAdmissionProcess);
 
 
 
